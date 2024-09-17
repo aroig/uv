@@ -56,6 +56,20 @@ impl RequiresDist {
         project_workspace: &ProjectWorkspace,
         sources: SourceStrategy,
     ) -> Result<Self, MetadataError> {
+        // Collect any `tool.uv.index` entries.
+        let empty = vec![];
+        let indexes = match sources {
+            SourceStrategy::Enabled => project_workspace
+                .current_project()
+                .pyproject_toml()
+                .tool
+                .as_ref()
+                .and_then(|tool| tool.uv.as_ref())
+                .and_then(|uv| uv.index.as_deref())
+                .unwrap_or(&empty),
+            SourceStrategy::Disabled => &empty,
+        };
+
         // Collect any `tool.uv.sources` and `tool.uv.dev_dependencies` from `pyproject.toml`.
         let empty = BTreeMap::default();
         let sources = match sources {
@@ -89,6 +103,7 @@ impl RequiresDist {
                         &metadata.name,
                         project_workspace.project_root(),
                         sources,
+                        indexes,
                         project_workspace.workspace(),
                     )
                     .map(LoweredRequirement::into_inner)
@@ -112,6 +127,7 @@ impl RequiresDist {
                     &metadata.name,
                     project_workspace.project_root(),
                     sources,
+                    indexes,
                     project_workspace.workspace(),
                 )
                 .map(LoweredRequirement::into_inner)

@@ -6,7 +6,10 @@
 //!
 //! Then lowers them into a dependency specification.
 
+use distribution_types::IndexSource;
 use glob::Pattern;
+use pep440_rs::{Version, VersionSpecifiers};
+use pypi_types::{RequirementSource, SupportedEnvironments, VerbatimParsedUrl};
 use serde::{de::IntoDeserializer, Deserialize, Serialize};
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
@@ -14,9 +17,6 @@ use std::str::FromStr;
 use std::{collections::BTreeMap, mem};
 use thiserror::Error;
 use url::Url;
-
-use pep440_rs::{Version, VersionSpecifiers};
-use pypi_types::{RequirementSource, SupportedEnvironments, VerbatimParsedUrl};
 use uv_fs::relative_to;
 use uv_git::GitReference;
 use uv_macros::OptionsMetadata;
@@ -148,6 +148,10 @@ pub struct ToolUv {
     /// The sources to use (e.g., workspace members, Git repositories, local paths) when resolving
     /// dependencies.
     pub sources: Option<ToolUvSources>,
+
+    /// The indexes.
+    pub index: Option<Vec<IndexSource>>,
+
     /// The workspace definition for the project, if any.
     #[option_group]
     pub workspace: Option<ToolUvWorkspace>,
@@ -441,10 +445,7 @@ pub enum Source {
         editable: Option<bool>,
     },
     /// A dependency pinned to a specific index, e.g., `torch` after setting `torch` to `https://download.pytorch.org/whl/cu118`.
-    Registry {
-        // TODO(konstin): The string is more-or-less a placeholder
-        index: String,
-    },
+    Registry { index: String },
     /// A dependency on another package in the workspace.
     Workspace {
         /// When set to `false`, the package will be fetched from the remote index, rather than
