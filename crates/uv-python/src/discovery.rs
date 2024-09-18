@@ -943,11 +943,14 @@ pub(crate) fn find_python_installation(
 
         // If it's an alternative implementation, and alternative implementations aren't allowed
         // skip it
+        let allows_alternative_implementation = request.allows_alternative_implementations()
+            || installation.source.allows_alternative_implementations()
+            || (installation.uses_default_executable_name()
+                && installation.source == PythonSource::SearchPath);
         if !matches!(
             installation.implementation(),
             LenientImplementationName::Known(ImplementationName::CPython),
-        ) && !request.allows_alternative_implementations()
-            && !installation.source.allows_alternative_implementations()
+        ) && !allows_alternative_implementation
         {
             debug!("Skipping alternative implementation {}", installation.key());
             continue;
@@ -1390,7 +1393,8 @@ impl PythonRequest {
 
     pub(crate) fn allows_alternative_implementations(&self) -> bool {
         match self {
-            Self::Any => false,
+            Self::Default => false,
+            Self::Any => true,
             Self::Version(_) => false,
             Self::Directory(_) | Self::File(_) | Self::ExecutableName(_) => true,
             Self::Implementation(_) => true,
@@ -1593,7 +1597,7 @@ impl VersionRequest {
             };
 
             match self {
-                Self::Any | Self::Range(_) => {
+                Self::Default | Self::Any | Self::Range(_) => {
                     result.push(python3);
                     result.push(python);
                 }

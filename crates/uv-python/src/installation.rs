@@ -17,6 +17,7 @@ use crate::managed::{ManagedPythonInstallation, ManagedPythonInstallations};
 use crate::platform::{Arch, Libc, Os};
 use crate::{
     downloads, Error, Interpreter, PythonDownloads, PythonPreference, PythonSource, PythonVersion,
+    VersionRequest,
 };
 
 /// A Python interpreter and accompanying tools.
@@ -198,6 +199,22 @@ impl PythonInstallation {
 
     pub fn into_interpreter(self) -> Interpreter {
         self.interpreter
+    }
+
+    /// Whether or not this Python installation uses a default Python name, like `python`,
+    /// `python3`, or `python.exe`.
+    pub(crate) fn uses_default_executable_name(&self) -> bool {
+        let Some(file_name) = self.interpreter.sys_executable().file_name() else {
+            return false;
+        };
+        let Some(name) = file_name.to_str() else {
+            return false;
+        };
+        VersionRequest::Any
+            .default_names()
+            .into_iter()
+            .flatten()
+            .any(|default_name| name == default_name)
     }
 }
 
