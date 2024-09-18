@@ -1634,6 +1634,7 @@ mod tests {
               }
             },
             "sources": {},
+            "indexes": [],
             "pyproject_toml": {
               "project": {
                 "name": "bird-feeder",
@@ -1685,6 +1686,7 @@ mod tests {
                   }
                 },
                 "sources": {},
+                "indexes": [],
                 "pyproject_toml": {
                   "project": {
                     "name": "bird-feeder",
@@ -1767,6 +1769,7 @@ mod tests {
                     "workspace": true
                   }
                 },
+                "indexes": [],
                 "pyproject_toml": {
                   "project": {
                     "name": "albatross",
@@ -1785,6 +1788,7 @@ mod tests {
                           "workspace": true
                         }
                       },
+                      "index": null,
                       "workspace": {
                         "members": [
                           "packages/*"
@@ -1867,11 +1871,13 @@ mod tests {
                   }
                 },
                 "sources": {},
+                "indexes": [],
                 "pyproject_toml": {
                   "project": null,
                   "tool": {
                     "uv": {
                       "sources": null,
+                      "index": null,
                       "workspace": {
                         "members": [
                           "packages/*"
@@ -1925,6 +1931,7 @@ mod tests {
                   }
                 },
                 "sources": {},
+                "indexes": [],
                 "pyproject_toml": {
                   "project": {
                     "name": "albatross",
@@ -2056,6 +2063,7 @@ mod tests {
                   }
                 },
                 "sources": {},
+                "indexes": [],
                 "pyproject_toml": {
                   "project": {
                     "name": "albatross",
@@ -2069,6 +2077,7 @@ mod tests {
                   "tool": {
                     "uv": {
                       "sources": null,
+                      "index": null,
                       "workspace": {
                         "members": [
                           "packages/*"
@@ -2154,6 +2163,7 @@ mod tests {
                   }
                 },
                 "sources": {},
+                "indexes": [],
                 "pyproject_toml": {
                   "project": {
                     "name": "albatross",
@@ -2167,6 +2177,7 @@ mod tests {
                   "tool": {
                     "uv": {
                       "sources": null,
+                      "index": null,
                       "workspace": {
                         "members": [
                           "packages/seeds",
@@ -2266,6 +2277,7 @@ mod tests {
                   }
                 },
                 "sources": {},
+                "indexes": [],
                 "pyproject_toml": {
                   "project": {
                     "name": "albatross",
@@ -2279,6 +2291,7 @@ mod tests {
                   "tool": {
                     "uv": {
                       "sources": null,
+                      "index": null,
                       "workspace": {
                         "members": [
                           "packages/seeds",
@@ -2352,6 +2365,7 @@ mod tests {
                   }
                 },
                 "sources": {},
+                "indexes": [],
                 "pyproject_toml": {
                   "project": {
                     "name": "albatross",
@@ -2365,6 +2379,7 @@ mod tests {
                   "tool": {
                     "uv": {
                       "sources": null,
+                      "index": null,
                       "workspace": {
                         "members": [
                           "packages/seeds",

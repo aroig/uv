@@ -884,7 +884,7 @@ async fn run(cli: Cli) -> Result<ExitStatus> {
                 )
                 .collect::<Vec<_>>();
 
-            commands::tool_install(
+            Box::pin(commands::tool_install(
                 args.package,
                 args.editable,
                 args.from,
@@ -900,7 +900,7 @@ async fn run(cli: Cli) -> Result<ExitStatus> {
                 globals.native_tls,
                 cache,
                 printer,
-            )
+            ))
             .await
         }
         Commands::Tool(ToolNamespace {

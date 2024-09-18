@@ -5,7 +5,19 @@ use pypi_types::RequirementSource;
 use rustc_hash::FxHashMap;
 use std::collections::hash_map::Entry;
 
-/// A map of package names to their explicit index across all forks.
+/// A map of package names to their explicit index.
+///
+/// For example, given:
+/// ```toml
+/// [[tool.uv.index]]
+/// name = "pytorch"
+/// url = "https://download.pytorch.org/whl/cu121"
+///
+/// [tool.uv.sources]
+/// torch = { index = "pytorch" }
+/// ```
+///
+/// [`Indexes`] would contain a single entry mapping `torch` to `https://download.pytorch.org/whl/cu121`.
 #[derive(Debug, Default, Clone)]
 pub(crate) struct Indexes(FxHashMap<PackageName, IndexUrl>);
 

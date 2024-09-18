@@ -73,6 +73,50 @@ environments = ["sys_platform == 'darwin'"]
 
 ---
 
+### [`index`](#index) {: #index }
+
+The indexes to use when resolving dependencies.
+
+Accepts either a repository compliant with [PEP 503](https://peps.python.org/pep-0503/)
+(the simple repository API), or a local directory laid out in the same format.
+
+Indexes are considered in the order in which they're defined, such that the first-defined
+index has the highest priority. Further, the indexes provided by this setting are given
+higher priority than any indexes specified via [`index_url`](#index-url) or
+[`extra_index_url`](#extra-index-url).
+
+If an index is marked as `explicit = true`, it will be used exclusively for those
+dependencies that select it explicitly via `[tool.uv.sources]`, as in:
+
+```toml
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+```
+
+If an index is marked as `default = true`, it will be moved to the front of the list of
+the list of indexes, such that it is given the highest priority when resolving packages.
+Additionally, marking an index as default will disable the PyPI default index.
+
+**Default value**: `"[]"`
+
+**Type**: `dict`
+
+**Example usage**:
+
+```toml title="pyproject.toml"
+[tool.uv]
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu121"
+```
+
+---
+
 ### [`managed`](#managed) {: #managed }
 
 Whether the project is managed by uv. If `false`, uv will ignore the project when
@@ -542,6 +586,60 @@ formats described above.
     ```toml
     
     find-links = ["https://download.pytorch.org/whl/torch_stable.html"]
+    ```
+
+---
+
+### [`index`](#index) {: #index }
+
+The indexes to use when resolving dependencies.
+
+Accepts either a repository compliant with [PEP 503](https://peps.python.org/pep-0503/)
+(the simple repository API), or a local directory laid out in the same format.
+
+Indexes are considered in the order in which they're defined, such that the first-defined
+index has the highest priority. Further, the indexes provided by this setting are given
+higher priority than any indexes specified via [`index_url`](#index-url) or
+[`extra_index_url`](#extra-index-url).
+
+If an index is marked as `explicit = true`, it will be used exclusively for those
+dependencies that select it explicitly via `[tool.uv.sources]`, as in:
+
+```toml
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+```
+
+If an index is marked as `default = true`, it will be moved to the front of the list of
+the list of indexes, such that it is given the highest priority when resolving packages.
+Additionally, marking an index as default will disable the PyPI default index.
+
+**Default value**: `"[]"`
+
+**Type**: `dict`
+
+**Example usage**:
+
+=== "pyproject.toml"
+
+    ```toml
+    [tool.uv]
+    [[tool.uv.index]]
+    name = "pytorch"
+    url = "https://download.pytorch.org/whl/cu121"
+    ```
+=== "uv.toml"
+
+    ```toml
+    
+    [[tool.uv.index]]
+    name = "pytorch"
+    url = "https://download.pytorch.org/whl/cu121"
     ```
 
 ---

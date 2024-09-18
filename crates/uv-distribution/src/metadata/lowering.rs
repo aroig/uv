@@ -115,14 +115,15 @@ impl LoweredRequirement {
                 // in that order.
                 let Some(index) = project_indexes
                     .iter()
-                    .find(|IndexSource { name, .. }| *name == index)
-                    .or_else(|| {
-                        workspace
-                            .indexes()
-                            .iter()
-                            .find(|IndexSource { name, .. }| *name == index)
+                    .find(|IndexSource { name, .. }| {
+                        name.as_ref().is_some_and(|name| *name == index)
                     })
-                    .map(|IndexSource { index, .. }| index.clone())
+                    .or_else(|| {
+                        workspace.indexes().iter().find(|IndexSource { name, .. }| {
+                            name.as_ref().is_some_and(|name| *name == index)
+                        })
+                    })
+                    .map(|IndexSource { url: index, .. }| index.clone())
                 else {
                     return Err(LoweringError::MissingIndex(requirement.name, index));
                 };
@@ -240,8 +241,10 @@ impl LoweredRequirement {
             Source::Registry { index } => {
                 let Some(index) = indexes
                     .iter()
-                    .find(|IndexSource { name, .. }| *name == index)
-                    .map(|IndexSource { index, .. }| index.clone())
+                    .find(|IndexSource { name, .. }| {
+                        name.as_ref().is_some_and(|name| *name == index)
+                    })
+                    .map(|IndexSource { url: index, .. }| index.clone())
                 else {
                     return Err(LoweringError::MissingIndex(requirement.name, index));
                 };

@@ -149,12 +149,47 @@ pub struct ToolUv {
     /// dependencies.
     pub sources: Option<ToolUvSources>,
 
-    /// The indexes.
+    /// The indexes to use when resolving dependencies.
+    ///
+    /// Accepts either a repository compliant with [PEP 503](https://peps.python.org/pep-0503/)
+    /// (the simple repository API), or a local directory laid out in the same format.
+    ///
+    /// Indexes are considered in the order in which they're defined, such that the first-defined
+    /// index has the highest priority. Further, the indexes provided by this setting are given
+    /// higher priority than any indexes specified via [`index_url`](#index-url) or
+    /// [`extra_index_url`](#extra-index-url).
+    ///
+    /// If an index is marked as `explicit = true`, it will be used exclusively for those
+    /// dependencies that select it explicitly via `[tool.uv.sources]`, as in:
+    ///
+    /// ```toml
+    /// [[tool.uv.index]]
+    /// name = "pytorch"
+    /// url = "https://download.pytorch.org/whl/cu121"
+    /// explicit = true
+    ///
+    /// [tool.uv.sources]
+    /// torch = { index = "pytorch" }
+    /// ```
+    ///
+    /// If an index is marked as `default = true`, it will be moved to the front of the list of
+    /// the list of indexes, such that it is given the highest priority when resolving packages.
+    /// Additionally, marking an index as default will disable the PyPI default index.
+    #[option(
+        default = "\"[]\"",
+        value_type = "dict",
+        example = r#"
+            [[tool.uv.index]]
+            name = "pytorch"
+            url = "https://download.pytorch.org/whl/cu121"
+        "#
+    )]
     pub index: Option<Vec<IndexSource>>,
 
     /// The workspace definition for the project, if any.
     #[option_group]
     pub workspace: Option<ToolUvWorkspace>,
+
     /// Whether the project is managed by uv. If `false`, uv will ignore the project when
     /// `uv run` is invoked.
     #[option(
@@ -165,6 +200,7 @@ pub struct ToolUv {
         "#
     )]
     pub managed: Option<bool>,
+
     /// Whether the project should be considered a Python package, or a non-package ("virtual")
     /// project.
     ///
@@ -183,6 +219,7 @@ pub struct ToolUv {
         "#
     )]
     pub package: Option<bool>,
+
     /// The project's development dependencies. Development dependencies will be installed by
     /// default in `uv run` and `uv sync`, but will not appear in the project's published metadata.
     #[cfg_attr(
@@ -200,6 +237,7 @@ pub struct ToolUv {
         "#
     )]
     pub dev_dependencies: Option<Vec<pep508_rs::Requirement<VerbatimParsedUrl>>>,
+
     /// A list of supported environments against which to resolve dependencies.
     ///
     /// By default, uv will resolve for all possible environments during a `uv lock` operation.
@@ -224,6 +262,7 @@ pub struct ToolUv {
         "#
     )]
     pub environments: Option<SupportedEnvironments>,
+
     /// Overrides to apply when resolving the project's dependencies.
     ///
     /// Overrides are used to force selection of a specific version of a package, regardless of the
@@ -255,6 +294,7 @@ pub struct ToolUv {
         "#
     )]
     pub override_dependencies: Option<Vec<pep508_rs::Requirement<VerbatimParsedUrl>>>,
+
     /// Constraints to apply when resolving the project's dependencies.
     ///
     /// Constraints are used to restrict the versions of dependencies that are selected during

@@ -92,6 +92,7 @@ fn resolve_uv_toml() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Pypi(
                         VerbatimUrl {
@@ -231,6 +232,7 @@ fn resolve_uv_toml() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Pypi(
                         VerbatimUrl {
@@ -371,6 +373,7 @@ fn resolve_uv_toml() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Pypi(
                         VerbatimUrl {
@@ -543,6 +546,7 @@ fn resolve_pyproject_toml() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Pypi(
                         VerbatimUrl {
@@ -684,6 +688,7 @@ fn resolve_pyproject_toml() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -811,6 +816,7 @@ fn resolve_pyproject_toml() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Pypi(
                         VerbatimUrl {
@@ -975,6 +981,7 @@ fn resolve_index_url() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Url(
                         VerbatimUrl {
@@ -1139,6 +1146,7 @@ fn resolve_index_url() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Url(
                         VerbatimUrl {
@@ -1348,6 +1356,7 @@ fn resolve_find_links() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [
@@ -1511,6 +1520,7 @@ fn resolve_top_level() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -1644,6 +1654,7 @@ fn resolve_top_level() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [
                     Url(
@@ -1805,6 +1816,7 @@ fn resolve_top_level() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [
                     Url(
@@ -1990,6 +2002,7 @@ fn resolve_user_configuration() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -2113,6 +2126,7 @@ fn resolve_user_configuration() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -2236,6 +2250,7 @@ fn resolve_user_configuration() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -2361,6 +2376,7 @@ fn resolve_user_configuration() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -2498,6 +2514,7 @@ fn resolve_tool() -> anyhow::Result<()> {
             ),
         ),
         options: ResolverInstallerOptions {
+            index: None,
             index_url: None,
             extra_index_url: None,
             no_index: None,
@@ -2533,6 +2550,7 @@ fn resolve_tool() -> anyhow::Result<()> {
         },
         settings: ResolverInstallerSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -2658,6 +2676,7 @@ fn resolve_poetry_toml() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -2809,6 +2828,7 @@ fn resolve_both() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Pypi(
                         VerbatimUrl {
@@ -2974,6 +2994,7 @@ fn resolve_config_file() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: Some(
                     Pypi(
                         VerbatimUrl {
@@ -3215,6 +3236,7 @@ fn resolve_skip_empty() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -3341,6 +3363,7 @@ fn resolve_skip_empty() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
@@ -3475,6 +3498,7 @@ fn allow_insecure_host() -> anyhow::Result<()> {
         ),
         settings: PipSettings {
             index_locations: IndexLocations {
+                sources: [],
                 index: None,
                 extra_index: [],
                 flat_index: [],
