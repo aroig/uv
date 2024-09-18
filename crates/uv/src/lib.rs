@@ -1078,6 +1078,7 @@ async fn run(cli: Cli) -> Result<ExitStatus> {
                 username,
                 password,
                 publish_url,
+                trusted_publishing,
                 keyring_provider,
                 allow_insecure_host,
             } = PublishSettings::resolve(args, filesystem);
@@ -1085,6 +1086,7 @@ async fn run(cli: Cli) -> Result<ExitStatus> {
             commands::publish(
                 files,
                 publish_url,
+                trusted_publishing,
                 keyring_provider,
                 allow_insecure_host,
                 username,

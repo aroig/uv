@@ -6,12 +6,13 @@ use std::fmt::Write;
 use tracing::info;
 use url::Url;
 use uv_client::{BaseClientBuilder, Connectivity};
-use uv_configuration::{KeyringProviderType, TrustedHost};
-use uv_publish::{files_for_publishing, upload};
+use uv_configuration::{KeyringProviderType, TrustedHost, TrustedPublishing};
+use uv_publish::{check_trusted_publishing, files_for_publishing, upload};
 
 pub(crate) async fn publish(
     paths: Vec<String>,
     publish_url: Url,
+    trusted_publishing: TrustedPublishing,
     keyring_provider: KeyringProviderType,
     allow_insecure_host: Vec<TrustedHost>,
     username: Option<String>,
@@ -41,6 +42,21 @@ pub(crate) async fn publish(
         // https://github.com/seanmonstar/reqwest/issues/2416
         .only_authenticated(true)
         .build();
+
+    // If applicable, attempt obtaining a token for trusted publishing.
+    let trusted_publishing_token = check_trusted_publishing(
+        username.as_deref(),
+        password.as_deref(),
+        trusted_publishing,
+        &publish_url,
+        &client.client(),
+    )
+    .await?;
+    let (username, password) = if let Some(password) = trusted_publishing_token {
+        (Some("__token__".to_string()), Some(password))
+    } else {
+        (username, password)
+    };
 
     for (file, filename) in files {
         let size = fs_err::metadata(&file)?.len();
