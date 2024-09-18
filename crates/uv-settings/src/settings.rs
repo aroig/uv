@@ -2,7 +2,7 @@ use std::{fmt::Debug, num::NonZeroUsize, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use distribution_types::{FlatIndexLocation, IndexUrl};
+use distribution_types::{FlatIndexLocation, IndexSource, IndexUrl};
 use install_wheel_rs::linker::LinkMode;
 use pep508_rs::Requirement;
 use pypi_types::{SupportedEnvironments, VerbatimParsedUrl};
@@ -252,6 +252,7 @@ pub struct GlobalOptions {
 #[serde(rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct InstallerOptions {
+    pub index: Option<Vec<IndexSource>>,
     pub index_url: Option<IndexUrl>,
     pub extra_index_url: Option<Vec<IndexUrl>>,
     pub no_index: Option<bool>,
@@ -279,6 +280,7 @@ pub struct InstallerOptions {
 #[serde(rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ResolverOptions {
+    pub index: Option<Vec<IndexSource>>,
     pub index_url: Option<IndexUrl>,
     pub extra_index_url: Option<Vec<IndexUrl>>,
     pub no_index: Option<bool>,
@@ -311,6 +313,21 @@ pub struct ResolverOptions {
 #[serde(rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ResolverInstallerOptions {
+    /// The URL of the Python package index (by default: <https://pypi.org/simple>).
+    ///
+    /// Accepts either a repository compliant with [PEP 503](https://peps.python.org/pep-0503/)
+    /// (the simple repository API), or a local directory laid out in the same format.
+    ///
+    /// The index provided by this setting is given lower priority than any indexes specified via
+    /// [`extra_index_url`](#extra-index-url).
+    #[option(
+        default = "\"https://pypi.org/simple\"",
+        value_type = "str",
+        example = r#"
+            index-url = "https://test.pypi.org/simple"
+        "#
+    )]
+    pub index: Option<Vec<IndexSource>>,
     /// The URL of the Python package index (by default: <https://pypi.org/simple>).
     ///
     /// Accepts either a repository compliant with [PEP 503](https://peps.python.org/pep-0503/)
@@ -1281,6 +1298,7 @@ pub struct PipOptions {
 impl From<ResolverInstallerOptions> for ResolverOptions {
     fn from(value: ResolverInstallerOptions) -> Self {
         Self {
+            index: value.index,
             index_url: value.index_url,
             extra_index_url: value.extra_index_url,
             no_index: value.no_index,
@@ -1309,6 +1327,7 @@ impl From<ResolverInstallerOptions> for ResolverOptions {
 impl From<ResolverInstallerOptions> for InstallerOptions {
     fn from(value: ResolverInstallerOptions) -> Self {
         Self {
+            index: value.index,
             index_url: value.index_url,
             extra_index_url: value.extra_index_url,
             no_index: value.no_index,
@@ -1342,6 +1361,7 @@ impl From<ResolverInstallerOptions> for InstallerOptions {
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ToolOptions {
+    pub index: Option<Vec<IndexSource>>,
     pub index_url: Option<IndexUrl>,
     pub extra_index_url: Option<Vec<IndexUrl>>,
     pub no_index: Option<bool>,
@@ -1367,6 +1387,7 @@ pub struct ToolOptions {
 impl From<ResolverInstallerOptions> for ToolOptions {
     fn from(value: ResolverInstallerOptions) -> Self {
         Self {
+            index: value.index,
             index_url: value.index_url,
             extra_index_url: value.extra_index_url,
             no_index: value.no_index,
@@ -1394,6 +1415,7 @@ impl From<ResolverInstallerOptions> for ToolOptions {
 impl From<ToolOptions> for ResolverInstallerOptions {
     fn from(value: ToolOptions) -> Self {
         Self {
+            index: value.index,
             index_url: value.index_url,
             extra_index_url: value.extra_index_url,
             no_index: value.no_index,

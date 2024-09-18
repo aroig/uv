@@ -11,7 +11,7 @@ use url::{ParseError, Url};
 
 use pep508_rs::{VerbatimUrl, VerbatimUrlError};
 
-use crate::Verbatim;
+use crate::{IndexSource, Verbatim};
 
 static PYPI_URL: LazyLock<Url> = LazyLock::new(|| Url::parse("https://pypi.org/simple").unwrap());
 
@@ -52,6 +52,14 @@ impl IndexUrl {
             Self::Pypi(url) => url.raw(),
             Self::Url(url) => url.raw(),
             Self::Path(url) => url.raw(),
+        }
+    }
+
+    pub fn into_url(self) -> Url {
+        match self {
+            Self::Pypi(url) => url.into_url(),
+            Self::Url(url) => url.into_url(),
+            Self::Path(url) => url.into_url(),
         }
     }
 
@@ -292,6 +300,7 @@ impl From<VerbatimUrl> for FlatIndexLocation {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct IndexLocations {
+    sources: Vec<IndexSource>,
     index: Option<IndexUrl>,
     extra_index: Vec<IndexUrl>,
     flat_index: Vec<FlatIndexLocation>,
@@ -302,6 +311,7 @@ impl Default for IndexLocations {
     /// By default, use the `PyPI` index.
     fn default() -> Self {
         Self {
+            sources: Vec::new(),
             index: Some(DEFAULT_INDEX_URL.clone()),
             extra_index: Vec::new(),
             flat_index: Vec::new(),
@@ -313,12 +323,14 @@ impl Default for IndexLocations {
 impl IndexLocations {
     /// Determine the index URLs to use for fetching packages.
     pub fn new(
+        sources: Vec<IndexSource>,
         index: Option<IndexUrl>,
         extra_index: Vec<IndexUrl>,
         flat_index: Vec<FlatIndexLocation>,
         no_index: bool,
     ) -> Self {
         Self {
+            sources,
             index,
             extra_index,
             flat_index,
@@ -335,12 +347,14 @@ impl IndexLocations {
     #[must_use]
     pub fn combine(
         self,
+        sources: Vec<IndexSource>,
         index: Option<IndexUrl>,
         extra_index: Vec<IndexUrl>,
         flat_index: Vec<FlatIndexLocation>,
         no_index: bool,
     ) -> Self {
         Self {
+            sources: self.sources.into_iter().chain(sources).collect(),
             index: self.index.or(index),
             extra_index: self.extra_index.into_iter().chain(extra_index).collect(),
             flat_index: self.flat_index.into_iter().chain(flat_index).collect(),
@@ -351,7 +365,8 @@ impl IndexLocations {
     /// Returns `true` if no index configuration is set, i.e., the [`IndexLocations`] matches the
     /// default configuration.
     pub fn is_none(&self) -> bool {
-        self.index.is_none()
+        self.sources.is_empty()
+            && self.index.is_none()
             && self.extra_index.is_empty()
             && self.flat_index.is_empty()
             && !self.no_index
@@ -402,6 +417,7 @@ impl<'a> IndexLocations {
     /// Clone the index locations into a [`IndexUrls`] instance.
     pub fn index_urls(&'a self) -> IndexUrls {
         IndexUrls {
+            sources: self.sources.clone(),
             index: self.index.clone(),
             extra_index: self.extra_index.clone(),
             no_index: self.no_index,
@@ -424,6 +440,7 @@ impl<'a> IndexLocations {
 /// From a pip perspective, this type merges `--index-url` and `--extra-index-url`.
 #[derive(Debug, Clone)]
 pub struct IndexUrls {
+    sources: Vec<IndexSource>,
     index: Option<IndexUrl>,
     extra_index: Vec<IndexUrl>,
     no_index: bool,
@@ -433,6 +450,7 @@ impl Default for IndexUrls {
     /// By default, use the `PyPI` index.
     fn default() -> Self {
         Self {
+            sources: Vec::new(),
             index: Some(DEFAULT_INDEX_URL.clone()),
             extra_index: Vec::new(),
             no_index: false,
@@ -441,6 +459,15 @@ impl Default for IndexUrls {
 }
 
 impl<'a> IndexUrls {
+    /// Return an iterator over the `tool.uv.index` sources.
+    fn sources(&'a self) -> impl Iterator<Item = &'a IndexUrl> + 'a {
+        if self.no_index {
+            Either::Left(std::iter::empty())
+        } else {
+            Either::Right(self.sources.iter().map(|source| &source.index))
+        }
+    }
+
     /// Return the fallback [`IndexUrl`] entry.
     ///
     /// If `--no-index` is set, return `None`.
@@ -473,13 +500,14 @@ impl<'a> IndexUrls {
     /// If `no_index` was enabled, then this always returns an empty
     /// iterator.
     pub fn indexes(&'a self) -> impl Iterator<Item = &'a IndexUrl> + 'a {
-        self.extra_index().chain(self.index())
+        self.sources().chain(self.extra_index()).chain(self.index())
     }
 }
 
 impl From<IndexLocations> for IndexUrls {
     fn from(locations: IndexLocations) -> Self {
         Self {
+            sources: locations.sources,
             index: locations.index,
             extra_index: locations.extra_index,
             no_index: locations.no_index,

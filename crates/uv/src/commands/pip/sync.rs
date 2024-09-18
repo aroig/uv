@@ -214,8 +214,13 @@ pub(crate) async fn pip_sync(
     };
 
     // Incorporate any index locations from the provided sources.
-    let index_locations =
-        index_locations.combine(index_url, extra_index_urls, find_links, no_index);
+    let index_locations = index_locations.combine(
+        Vec::default(),
+        index_url,
+        extra_index_urls,
+        find_links,
+        no_index,
+    );
 
     // Add all authenticated sources to the cache.
     for url in index_locations.urls() {

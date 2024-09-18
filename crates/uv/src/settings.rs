@@ -1873,6 +1873,7 @@ impl From<ResolverOptions> for ResolverSettings {
     fn from(value: ResolverOptions) -> Self {
         Self {
             index_locations: IndexLocations::new(
+                value.index.unwrap_or_default(),
                 value.index_url,
                 value.extra_index_url.unwrap_or_default(),
                 value.find_links.unwrap_or_default(),
@@ -1995,6 +1996,7 @@ impl From<ResolverInstallerOptions> for ResolverInstallerSettings {
     fn from(value: ResolverInstallerOptions) -> Self {
         Self {
             index_locations: IndexLocations::new(
+                value.index.unwrap_or_default(),
                 value.index_url,
                 value.extra_index_url.unwrap_or_default(),
                 value.find_links.unwrap_or_default(),
@@ -2148,6 +2150,7 @@ impl PipSettings {
         } = pip.unwrap_or_default();
 
         let ResolverInstallerOptions {
+            index: top_level_index,
             index_url: top_level_index_url,
             extra_index_url: top_level_extra_index_url,
             no_index: top_level_no_index,
@@ -2202,6 +2205,7 @@ impl PipSettings {
 
         Self {
             index_locations: IndexLocations::new(
+                top_level_index.unwrap_or_default(),
                 args.index_url.combine(index_url),
                 args.extra_index_url
                     .combine(extra_index_url)

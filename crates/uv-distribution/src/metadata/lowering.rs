@@ -126,7 +126,7 @@ impl LoweredRequirement {
                 else {
                     return Err(LoweringError::MissingIndex(requirement.name, index));
                 };
-                registry_source(&requirement, index)?
+                registry_source(&requirement, index.into_url())?
             }
             Source::Workspace {
                 workspace: is_workspace,
@@ -245,7 +245,7 @@ impl LoweredRequirement {
                 else {
                     return Err(LoweringError::MissingIndex(requirement.name, index));
                 };
-                registry_source(&requirement, index)?
+                registry_source(&requirement, index.into_url())?
             }
             Source::Workspace { .. } => {
                 return Err(LoweringError::WorkspaceMember);

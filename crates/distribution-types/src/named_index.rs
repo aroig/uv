@@ -1,10 +1,10 @@
-use url::Url;
+use crate::IndexUrl;
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct IndexSource {
     pub name: String,
-    pub index: Url,
+    pub index: IndexUrl,
     #[serde(default)]
     pub kind: IndexKind,
 }

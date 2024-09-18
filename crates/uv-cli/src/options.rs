@@ -242,6 +242,7 @@ pub fn resolver_options(
     } = build_args;
 
     ResolverOptions {
+        index: None,
         index_url: index_args.index_url.and_then(Maybe::into_option),
         extra_index_url: index_args.extra_index_url.map(|extra_index_urls| {
             extra_index_urls
@@ -325,6 +326,7 @@ pub fn resolver_installer_options(
     } = build_args;
 
     ResolverInstallerOptions {
+        index: None,
         index_url: index_args.index_url.and_then(Maybe::into_option),
         extra_index_url: index_args.extra_index_url.map(|extra_index_urls| {
             extra_index_urls
