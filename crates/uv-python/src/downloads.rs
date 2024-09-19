@@ -281,6 +281,10 @@ impl PythonDownloadRequest {
         self.prereleases.unwrap_or_else(|| self.version.is_some())
     }
 
+    pub fn allows_alternative_implementations(&self) -> bool {
+        self.implementation.is_some()
+    }
+
     pub fn satisfied_by_interpreter(&self, interpreter: &Interpreter) -> bool {
         if let Some(version) = self.version() {
             if !version.matches_interpreter(interpreter) {

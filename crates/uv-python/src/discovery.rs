@@ -16,7 +16,7 @@ use uv_fs::Simplified;
 use uv_warnings::warn_user_once;
 
 use crate::downloads::PythonDownloadRequest;
-use crate::implementation::ImplementationName;
+use crate::implementation::{ImplementationName, LenientImplementationName};
 use crate::installation::PythonInstallation;
 use crate::interpreter::Error as InterpreterError;
 use crate::managed::ManagedPythonInstallations;
@@ -941,11 +941,23 @@ pub(crate) fn find_python_installation(
             continue;
         }
 
+        // If it's an alternative implementation, and alternative implementations aren't allowed
+        // skip it
+        if !matches!(
+            installation.implementation(),
+            LenientImplementationName::Known(ImplementationName::CPython),
+        ) && !request.allows_alternative_implementations()
+            && !installation.source.allows_alternative_implementations()
+        {
+            debug!("Skipping alternative implementation {}", installation.key());
+            continue;
+        }
+
         // If we didn't skip it, this is the installation to use
         return result;
     }
 
-    // If we only found pre-releases, they're implicitly allowed and we should return the first one
+    // If we only found pre-releases, they're implicitly allowed and we should return the first one.
     if let Some(installation) = first_prerelease {
         return Ok(Ok(installation));
     }
@@ -1202,7 +1214,7 @@ impl PythonRequest {
         for implementation in ImplementationName::possible_names() {
             if let Some(remainder) = value
                 .to_ascii_lowercase()
-                .strip_prefix(Into::<&str>::into(implementation))
+                .strip_prefix(Into::<&str>::into(*implementation))
             {
                 // e.g. `pypy`
                 if remainder.is_empty() {
@@ -1376,6 +1388,17 @@ impl PythonRequest {
         }
     }
 
+    pub(crate) fn allows_alternative_implementations(&self) -> bool {
+        match self {
+            Self::Any => false,
+            Self::Version(_) => false,
+            Self::Directory(_) | Self::File(_) | Self::ExecutableName(_) => true,
+            Self::Implementation(_) => true,
+            Self::ImplementationVersion(_, _) => true,
+            Self::Key(request) => request.allows_alternative_implementations(),
+        }
+    }
+
     pub(crate) fn is_explicit_system(&self) -> bool {
         matches!(self, Self::File(_) | Self::Directory(_))
     }
@@ -1411,6 +1434,18 @@ impl PythonSource {
             Self::Managed | Self::Registry | Self::MicrosoftStore => false,
             Self::SearchPath
             | Self::CondaPrefix
+            | Self::ProvidedPath
+            | Self::ParentInterpreter
+            | Self::ActiveEnvironment
+            | Self::DiscoveredEnvironment => true,
+        }
+    }
+
+    /// Whether an alternative Python implementation from the source should be used without opt-in.
+    pub(crate) fn allows_alternative_implementations(self) -> bool {
+        match self {
+            Self::Managed | Self::Registry | Self::SearchPath | Self::MicrosoftStore => false,
+            Self::CondaPrefix
             | Self::ProvidedPath
             | Self::ParentInterpreter
             | Self::ActiveEnvironment
@@ -1523,56 +1558,78 @@ impl VersionRequest {
         &'a self,
         implementation: Option<&'a ImplementationName>,
     ) -> impl Iterator<Item = Cow<'static, str>> + 'a {
-        implementation
-            .into_iter()
-            .flat_map(move |implementation| {
-                let extension = std::env::consts::EXE_SUFFIX;
-                let name: &str = implementation.into();
-                let (python, python3) = if extension.is_empty() {
-                    (Cow::Borrowed(name), Cow::Owned(format!("{name}3")))
+        // Collect the implementation name or all possible names if none was requested
+        // NOTE: It's annoying that we allocate here but the borrow checker is fighting me
+        let implementation_names: Vec<&'static str> = implementation.map_or_else(
+            || {
+                if matches!(self, Self::Any) {
+                    ImplementationName::possible_names().to_vec()
                 } else {
-                    (
-                        Cow::Owned(format!("{name}{extension}")),
-                        Cow::Owned(format!("{name}3{extension}")),
-                    )
-                };
-
-                match self {
-                    Self::Any | Self::Default | Self::Range(_) => {
-                        [Some(python3), Some(python), None, None]
-                    }
-                    Self::Major(major) => [
-                        Some(Cow::Owned(format!("{name}{major}{extension}"))),
-                        Some(python),
-                        None,
-                        None,
-                    ],
-                    Self::MajorMinor(major, minor) => [
-                        Some(Cow::Owned(format!("{name}{major}.{minor}{extension}"))),
-                        Some(Cow::Owned(format!("{name}{major}{extension}"))),
-                        Some(python),
-                        None,
-                    ],
-                    Self::MajorMinorPatch(major, minor, patch) => [
-                        Some(Cow::Owned(format!(
-                            "{name}{major}.{minor}.{patch}{extension}",
-                        ))),
-                        Some(Cow::Owned(format!("{name}{major}.{minor}{extension}"))),
-                        Some(Cow::Owned(format!("{name}{major}{extension}"))),
-                        Some(python),
-                    ],
-                    Self::MajorMinorPrerelease(major, minor, prerelease) => [
-                        Some(Cow::Owned(format!(
-                            "{name}{major}.{minor}{prerelease}{extension}",
-                        ))),
-                        Some(Cow::Owned(format!("{name}{major}{extension}"))),
-                        Some(python),
-                        None,
-                    ],
+                    Vec::new()
                 }
-            })
-            .chain(self.default_names())
-            .flatten()
+            },
+            |name| {
+                let name: &'static str = name.into();
+                vec![name]
+            },
+        );
+
+        let mut result = Vec::new();
+
+        // If no implementation was requested, prioritize the default names
+        if implementation.is_none() {
+            result.extend(self.default_names().into_iter().flatten());
+        }
+
+        for name in implementation_names {
+            let extension = std::env::consts::EXE_SUFFIX;
+            let (python, python3) = if extension.is_empty() {
+                (Cow::Borrowed(name), Cow::Owned(format!("{name}3")))
+            } else {
+                (
+                    Cow::Owned(format!("{name}{extension}")),
+                    Cow::Owned(format!("{name}3{extension}")),
+                )
+            };
+
+            match self {
+                Self::Any | Self::Range(_) => {
+                    result.push(python3);
+                    result.push(python);
+                }
+                Self::Major(major) => {
+                    result.push(Cow::Owned(format!("{name}{major}{extension}")));
+                    result.push(python);
+                }
+                Self::MajorMinor(major, minor) => {
+                    result.push(Cow::Owned(format!("{name}{major}.{minor}{extension}")));
+                    result.push(Cow::Owned(format!("{name}{major}{extension}")));
+                    result.push(python);
+                }
+                Self::MajorMinorPatch(major, minor, patch) => {
+                    result.push(Cow::Owned(format!(
+                        "{name}{major}.{minor}.{patch}{extension}",
+                    )));
+                    result.push(Cow::Owned(format!("{name}{major}.{minor}{extension}")));
+                    result.push(Cow::Owned(format!("{name}{major}{extension}")));
+                    result.push(python);
+                }
+                Self::MajorMinorPrerelease(major, minor, prerelease) => {
+                    result.push(Cow::Owned(format!(
+                        "{name}{major}.{minor}{prerelease}{extension}",
+                    )));
+                    result.push(Cow::Owned(format!("{name}{major}{extension}")));
+                    result.push(python);
+                }
+            }
+        }
+
+        // If an implementation was requested, prefer it over the default names
+        if implementation.is_some() {
+            result.extend(self.default_names().into_iter().flatten());
+        }
+
+        result.into_iter()
     }
 
     pub(crate) fn check_supported(&self) -> Result<(), String> {
