@@ -428,7 +428,7 @@ impl Lock {
                 }
             }
         }
-        Ok(Self {
+        let lock = Self {
             version,
             fork_markers,
             supported_environments,
@@ -437,7 +437,8 @@ impl Lock {
             packages,
             by_id,
             manifest,
-        })
+        };
+        Ok(lock)
     }
 
     /// Record the requirements that were used to generate this lock.
@@ -1512,6 +1513,19 @@ pub struct Package {
     ///
     /// Named `resolution-markers` in `uv.lock`.
     fork_markers: Vec<MarkerTree>,
+    /*
+    /// The "full" marker for this distribution. It precisely describes all
+    /// marker environments for which this distribution _can_ be installed.
+    /// That is, when doing a traversal over all of the distributions in a
+    /// resolution, this marker corresponds to the disjunction of all paths to
+    /// this distribution in the resolution graph.
+    ///
+    /// If a marker environment does not satisfy this marker, then one has a
+    /// guarantee that this package can never be installed in that environment.
+    ///
+    /// At time of writing, these markers aren't written to the lock file.
+    full_markers: MarkerTree,
+    */
     /// The resolved dependencies of the package.
     dependencies: Vec<Dependency>,
     /// The resolved optional dependencies of the package.
