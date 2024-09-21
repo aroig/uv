@@ -159,6 +159,7 @@ def publish_project(project_name: str, uv: Path):
                 "--publish-url",
                 "https://test.pypi.org/legacy/",
                 "--trusted-publishing",
+                "always"
             ],
             cwd=cwd.joinpath(project_name),
         )
